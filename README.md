@@ -1,279 +1,404 @@
-# ⚡ AI Adaptive Onboarding Engine v2
-
-> **Hackathon Project** — AI-powered personalized learning roadmap generator
-
----
-
-## 🎯 Problem Statement
-
-Corporate onboarding is broken. Every employee — fresher or senior — gets the **same training**.
-
-This leads to:
-- ❌ Beginners overwhelmed with advanced content
-- ❌ Experienced employees wasting time on basics
-- ❌ No personalization based on actual skill gaps
-
-**There is no intelligent system that understands WHO you are and WHAT you need to learn.**
+# AI Adaptive Onboarding Engine v3
+### Production-Grade AI Platform — Full Architecture Guide
 
 ---
 
-## 💡 Our Solution — AI Adaptive Onboarding Engine
+## 🏗️ Architecture Overview
 
-Upload your **Resume** + **Job Description** → AI analyzes → generates your **personalized learning roadmap** in seconds.
 ```
-Resume + JD  →  Skill Extraction  →  Gap Analysis  →  Adaptive Roadmap
-```
-
----
-
-## 🏗️ System Architecture
-```
-┌─────────────────────────────────────────────────────┐
-│                   React Frontend                     │
-│  Login → Dashboard → 8 Tabs → All 14 Features       │
-└─────────────────┬───────────────────────────────────┘
-                  │ REST API
-┌─────────────────▼───────────────────────────────────┐
-│                  FastAPI Backend                     │
-│                                                      │
-│  /api/auth/register   →  User Registration           │
-│  /api/auth/login      →  User Login                  │
-│  /api/analyze         →  Full AI Analysis Pipeline   │
-│  /api/mentor          →  AI Mentor Chat              │
-└─────────────────┬───────────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────────┐
-│              AI Layer (Dual Engine)                  │
-│                                                      │
-│  PRIMARY  →  Groq API  (llama-3.3-70b) ⚡ FAST      │
-│  FALLBACK →  Anthropic Claude (claude-sonnet-4)      │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT (React v18)                        │
+│  TanStack Query · Axios Interceptors · React Router v6          │
+│  DM Sans font · Tailwind CSS · Recharts · Lucide Icons          │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ HTTPS / JWT Bearer
+┌──────────────────────────────▼──────────────────────────────────┐
+│                    FASTAPI BACKEND (Python 3.11)                 │
+│  Async · Pydantic v2 · Motor (MongoDB) · JWT Auth               │
+│                                                                   │
+│  ┌─────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐     │
+│  │  /auth  │  │ /analyze │  │  /chat   │  │  /progress   │     │
+│  └────┬────┘  └────┬─────┘  └────┬─────┘  └──────┬───────┘     │
+│       │            │              │                │             │
+│  ┌────▼────────────▼──────────────▼────────────────▼──────────┐  │
+│  │                    SERVICE LAYER                            │  │
+│  │  analysis.py · roadmap.py · ai_client.py                   │  │
+│  └────────────────────────┬───────────────────────────────────┘  │
+│                            │                                      │
+│  ┌─────────────────────────▼──────────────────────────────────┐  │
+│  │                    ML PIPELINE                              │  │
+│  │  1. spaCy NER + Vocab Matching → Skill Extraction          │  │
+│  │  2. SentenceTransformers (MiniLM) → Embeddings             │  │
+│  │  3. Cosine Similarity → Resume↔JD Match Score              │  │
+│  │  4. Feature Engineering → Gap Scoring                      │  │
+│  │  5. Topological Sort → Dependency-Aware Path               │  │
+│  │  6. LLM (Groq/Claude) → Roadmap + Explanations            │  │
+│  └─────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+       ┌──────────────────────┼──────────────────────┐
+       │                      │                      │
+┌──────▼──────┐    ┌──────────▼──────────┐  ┌───────▼───────┐
+│  MongoDB    │    │   Groq API          │  │ Anthropic API │
+│  Atlas      │    │   (Primary LLM)     │  │  (Fallback)   │
+│  Motor async│    │   llama3-70b        │  │  claude-haiku │
+└─────────────┘    └─────────────────────┘  └───────────────┘
 ```
 
 ---
 
-## 🚀 14 Advanced Features
+## 📁 Directory Structure
 
-| # | Feature | Description |
-|---|---------|-------------|
-| 1 | 🔐 Authentication | Register / Login with secure token |
-| 2 | 🧠 Explainable AI | Every recommendation shows WHY — no black box |
-| 3 | 📊 Skill Gap Radar Chart | Visual: Required vs Current skills |
-| 4 | 🔥 Gap Heatmap | Bar chart showing gap intensity per skill |
-| 5 | 🗺️ Graph-Based Roadmap | Skill dependency graph — prereqs auto-handled |
-| 6 | 🎓 Multi-Level Detection | Beginner / Intermediate / Advanced with confidence % |
-| 7 | ✅ Progress Tracker | Mark modules complete — live progress bar |
-| 8 | 📚 Grounded Courses | Real courses from Coursera, fast.ai, MDN — no hallucination |
-| 9 | 🚀 Career Simulation | Predicts future role, salary range, milestones |
-| 10 | 🎯 Interview Prep | Auto-generated questions based on your skill gaps |
-| 11 | 📝 Resume Tips | Missing keywords, better phrasing, structure advice |
-| 12 | ⏱️ Time Optimizer | Total days, weekly plan, daily hours estimate |
-| 13 | 💬 AI Mentor Chatbot | Ask anything — personalized answers based on your profile |
-| 14 | 🌐 Cross-Domain | Works for Tech, Data Science, Management, and more |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, Recharts, CSS Variables |
-| Backend | FastAPI (Python 3.11+) |
-| Auth | Token-based auth + file store |
-| AI Primary | Groq API — `llama-3.3-70b-versatile` ⚡ |
-| AI Fallback | Anthropic — `claude-sonnet-4-20250514` |
-| Charts | Recharts (Radar + Bar) |
-| Parsing | PyMuPDF, python-docx |
-
----
-
-## 📁 Folder Structure
 ```
-ai-onboarding-v2/
+skillgap-v3/
 ├── backend/
-│   ├── main.py                  # FastAPI app entry point
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth.py          # Register, Login endpoints
+│   │   │   ├── analyze.py       # POST /analyze, GET /analyze/history
+│   │   │   ├── chat.py          # AI Mentor chat endpoint
+│   │   │   ├── progress.py      # Module completion tracking
+│   │   │   └── export.py        # PDF roadmap export
+│   │   ├── core/
+│   │   │   ├── config.py        # Pydantic Settings (env vars)
+│   │   │   ├── security.py      # JWT + bcrypt
+│   │   │   └── logging.py       # Structured logging
+│   │   ├── db/
+│   │   │   └── mongodb.py       # Motor async connection + indexes
+│   │   ├── ml/
+│   │   │   └── pipeline.py      # Full ML pipeline (NER, embeddings, scoring)
+│   │   ├── schemas/
+│   │   │   └── schemas.py       # Pydantic request/response models
+│   │   ├── services/
+│   │   │   ├── ai_client.py     # Groq → Claude fallback client
+│   │   │   ├── analysis.py      # Main orchestration service
+│   │   │   └── roadmap.py       # Roadmap generation + curated resources
+│   │   └── main.py              # FastAPI app, middleware, lifespan
 │   ├── requirements.txt
-│   ├── routers/
-│   │   ├── auth.py              # Register + Login endpoints
-│   │   └── analyze.py           # /analyze + /mentor endpoints
-│   └── services/
-│       ├── ai_client.py         # Groq (primary) + Anthropic (fallback)
-│       ├── extractor.py         # Resume + JD skill extraction
-│       ├── gap_analyzer.py      # Graph-based gap analysis engine
-│       ├── roadmap.py           # Adaptive roadmap generator
-│       └── advanced.py          # Reasoning, interview, career, mentor
-└── frontend/
-    ├── package.json
-    ├── public/
-    │   └── index.html
-    └── src/
-        ├── App.jsx              # Auth routing
-        ├── index.js
-        ├── hooks/
-        │   ├── useAuth.jsx      # Auth context + localStorage
-        │   └── presets.js       # Resume + JD sample templates
-        ├── pages/
-        │   ├── LoginPage.jsx
-        │   ├── RegisterPage.jsx
-        │   └── Dashboard.jsx    # All 8 tabs + 14 features
-        └── styles/
-            └── main.css         # Full design system
+│   └── Dockerfile
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ui/index.jsx     # Button, Card, Badge, Skeleton, Input...
+│   │   │   └── layout/
+│   │   │       └── AppLayout.jsx  # Sidebar + Header layout
+│   │   ├── data/
+│   │   │   └── presets.js       # Resume + JD sample presets
+│   │   ├── hooks/
+│   │   │   └── useAuth.jsx      # Auth context + hook
+│   │   ├── pages/
+│   │   │   ├── DashboardPage.jsx  # Stats + recent history
+│   │   │   ├── AnalyzePage.jsx    # Resume + JD input + loading
+│   │   │   ├── RoadmapPage.jsx    # Full results: gaps, roadmap, charts
+│   │   │   ├── MentorPage.jsx     # AI chat interface
+│   │   │   ├── HistoryPage.jsx    # Past analyses list
+│   │   │   └── AuthPages.jsx      # Login + Register
+│   │   ├── services/
+│   │   │   └── api.js           # Axios instance + all API methods
+│   │   ├── styles/
+│   │   │   └── globals.css      # Design tokens + reset
+│   │   └── App.jsx              # Router + QueryClient + Toaster
+│   ├── package.json
+│   └── vercel.json
+│
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml            # Test → Build → Deploy pipeline
+├── docker-compose.yml
+└── README.md
 ```
 
 ---
 
-## ⚙️ Setup & Installation
+## 🧠 ML Pipeline — Detailed
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- Groq API Key → [console.groq.com](https://console.groq.com) (Free)
-- Anthropic API Key → [console.anthropic.com](https://console.anthropic.com) (Fallback)
+### 1. Skill Extraction (Two-Pass)
+
+```python
+# Pass 1: spaCy Named Entity Recognition
+nlp = spacy.load("en_core_web_sm")
+doc = nlp(resume_text)
+# Entities recognized as tech skills via TECH_SKILLS_VOCAB lookup
+
+# Pass 2: Vocabulary Matching (5,000+ tech skills)
+for skill in TECH_SKILLS_VOCAB:
+    matches = re.findall(r'\b' + skill + r'\b', text_lower)
+    confidence = min(50 + len(matches) * 10, 95)
+
+# Merged output:
+# { name, level, category, confidence, frequency }
+```
+
+### 2. Embedding Similarity
+
+```python
+from sentence_transformers import SentenceTransformer
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Encode both documents
+embeddings = model.encode([resume_text, jd_text], normalize_embeddings=True)
+
+# Cosine similarity (dot product on normalized vectors)
+similarity = float(np.dot(embeddings[0], embeddings[1]))
+# Returns 0.0–1.0
+```
+
+### 3. Gap Scoring Features
+
+```
+gap_score = f(level_gap, frequency_weight, embedding_credit)
+
+level_gap         = (required_level - candidate_level) / required_level
+frequency_weight  = log(1 + mention_count) / log(11)  # 0–1 normalized
+embedding_credit  = cosine_similarity × 0.30            # max 30% partial credit
+
+final_gap = max(0, level_gap - embedding_credit) × 100
+```
+
+### 4. Learning Path Ordering (Topological Sort)
+
+```
+Skill graph with prerequisites:
+  Machine Learning → [Python, Statistics]
+  Deep Learning    → [Machine Learning, Python]
+  React            → [JavaScript, HTML/CSS]
+  Kubernetes       → [Docker]
+  ...
+
+Kahn's algorithm ensures prerequisites always come first.
+Tie-breaking by: gap_score × mention_count (highest priority first)
+```
 
 ---
 
-### Step 1 — Backend
+## 🍃 MongoDB Schema
+
+### users
+```json
+{
+  "_id": "ObjectId",
+  "email": "string (unique index)",
+  "name": "string",
+  "password_hash": "string (bcrypt)",
+  "created_at": "datetime",
+  "streak_days": "int",
+  "total_analyses": "int"
+}
+```
+
+### analyses
+```json
+{
+  "_id": "ObjectId",
+  "user_id": "string (index)",
+  "resume_text": "string (truncated 5000 chars)",
+  "jd_text": "string (truncated 3000 chars)",
+  "result": {
+    "candidate_name": "string",
+    "job_title": "string",
+    "learner_level": "Beginner|Intermediate|Advanced",
+    "resume_score": { "score": 72.5, "breakdown": {...} },
+    "overall_similarity": 0.73,
+    "skill_gaps": [...],
+    "learning_roadmap": [...],
+    "ai_summary": "string",
+    "created_at": "ISO string"
+  },
+  "created_at": "datetime (index)"
+}
+```
+
+### progress
+```json
+{
+  "_id": "ObjectId",
+  "user_id": "string (unique compound with analysis_id)",
+  "analysis_id": "string",
+  "completed_modules": [0, 2, 4],
+  "last_updated": "datetime"
+}
+```
+
+### chat_history
+```json
+{
+  "_id": "ObjectId",
+  "user_id": "string (compound index with analysis_id)",
+  "analysis_id": "string",
+  "question": "string",
+  "answer": "string",
+  "timestamp": "datetime"
+}
+```
+
+---
+
+## 🚀 Deployment Guide
+
+### Step 1 — MongoDB Atlas
+1. Create free cluster at mongodb.com/atlas
+2. Create database user + password
+3. Whitelist IP `0.0.0.0/0` (or specific IPs)
+4. Copy connection string: `mongodb+srv://user:pass@cluster.mongodb.net/`
+
+### Step 2 — Backend on Render
+1. Push code to GitHub
+2. Go to render.com → New Web Service
+3. Connect repo, set root directory to `backend/`
+4. Build command: `pip install -r requirements.txt && python -m spacy download en_core_web_sm`
+5. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+6. Add environment variables:
+   ```
+   MONGO_URI=mongodb+srv://...
+   MONGO_DB_NAME=skillgap_v3
+   GROQ_API_KEY=gsk_...
+   ANTHROPIC_API_KEY=sk-ant-...
+   JWT_SECRET=your-random-32-char-secret
+   ENVIRONMENT=production
+   ALLOWED_ORIGINS=["https://your-app.vercel.app"]
+   ```
+
+### Step 3 — Frontend on Vercel
+1. Go to vercel.com → New Project
+2. Import GitHub repo, set root to `frontend/`
+3. Add environment variable:
+   ```
+   REACT_APP_API_URL=https://your-backend.onrender.com/api
+   ```
+4. Deploy — Vercel auto-deploys on every push to main
+
+### Step 4 — CI/CD (GitHub Actions)
+Add these secrets to your GitHub repo:
+```
+GROQ_API_KEY
+ANTHROPIC_API_KEY
+JWT_SECRET
+REACT_APP_API_URL
+RENDER_DEPLOY_HOOK    (from Render dashboard)
+VERCEL_TOKEN
+VERCEL_ORG_ID
+VERCEL_PROJECT_ID
+```
+
+---
+
+## 🔐 Security Checklist
+
+- [x] bcrypt password hashing (cost factor 12)
+- [x] JWT with expiry (7 days, configurable)
+- [x] HTTPBearer token extraction
+- [x] Pydantic input validation on all endpoints
+- [x] Request size limits via field max_length
+- [x] CORS whitelist (not wildcard in production)
+- [x] GZip compression middleware
+- [x] Global exception handler (no stack traces in prod)
+- [ ] Rate limiting (add slowapi for production)
+- [ ] MongoDB field encryption (add for PII)
+
+---
+
+## ⚡ Performance Optimization
+
+### Backend
+- **Motor async driver**: non-blocking MongoDB I/O
+- **Parallel LLM calls**: asyncio.gather() for resume + JD extraction
+- **Model caching**: @lru_cache on spaCy and SentenceTransformer load
+- **Connection pooling**: Motor maxPoolSize=20
+
+### Frontend
+- **TanStack Query**: 5min staleTime, automatic background refresh
+- **Skeleton loaders**: prevents layout shift during loading
+- **React Router**: code splitting per route (lazy load optional)
+- **Axios**: interceptors handle auth + errors globally
+
+### Optional Redis Cache
+```python
+# Cache analysis results for 1 hour
+import aioredis
+redis = await aioredis.from_url(settings.REDIS_URL)
+
+cache_key = f"analysis:{hash(resume_text + jd_text)}"
+cached = await redis.get(cache_key)
+if cached:
+    return json.loads(cached)
+
+result = await run_full_analysis(...)
+await redis.setex(cache_key, 3600, json.dumps(result))
+```
+
+---
+
+## 📦 Installing & Running Locally
+
 ```bash
+# 1. Clone and setup
+git clone https://github.com/you/skillgap-v3
+cd skillgap-v3
+
+# 2. Start MongoDB (Docker)
+docker run -d -p 27017:27017 --name mongo mongo:7
+
+# 3. Backend
 cd backend
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-```
+python -m spacy download en_core_web_sm
 
-Set environment variables:
-```bash
-# Required
-export GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxx
+# Create .env
+cat > .env << EOF
+MONGO_URI=mongodb://localhost:27017
+GROQ_API_KEY=your_key
+ANTHROPIC_API_KEY=your_key
+JWT_SECRET=dev-secret-change-in-prod
+EOF
 
-# Optional (fallback if Groq fails)
-export ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxx
-```
+uvicorn app.main:app --reload
 
-Start the server:
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-Backend runs at: `http://localhost:8000`
-API docs at: `http://localhost:8000/docs`
-
----
-
-### Step 2 — Frontend
-```bash
+# 4. Frontend (new terminal)
 cd frontend
 npm install
+echo "REACT_APP_API_URL=http://localhost:8000/api" > .env
 npm start
 ```
 
-Frontend runs at: `http://localhost:3000`
-
----
-
-## 🤖 AI Pipeline — How It Works
-```
-1. User uploads Resume + JD text
-          ↓
-2. extractor.py  →  Groq extracts skills + confidence scores
-          ↓
-3. gap_analyzer.py  →  Graph-based gap scoring
-          │
-          ├── Skill dependency graph (Python → ML → Deep Learning)
-          ├── Missing prerequisite detection
-          └── Learner level: Beginner / Intermediate / Advanced
-          ↓
-4. roadmap.py  →  Adaptive learning path generated
-          │
-          ├── Beginner  → Fundamentals first
-          ├── Intermediate  → Skip basics, project-based
-          └── Advanced  → Architecture + best practices
-          ↓
-5. advanced.py  →  4 parallel AI calls
-          ├── Reasoning Trace (Explainable AI)
-          ├── Interview Questions
-          ├── Resume Suggestions
-          └── Career Simulation
+Or with Docker Compose:
+```bash
+cp .env.example .env  # fill in API keys
+docker-compose up --build
 ```
 
 ---
 
-## 🧠 Adaptive Learning Algorithm
+## 🧪 Testing
 
-Skills are represented as a **dependency graph**:
-```
-Python → Data Structures → Machine Learning → Deep Learning
-React → Next.js
-Docker → Kubernetes
-Linux Basics → AWS
-```
+```bash
+# Backend
+cd backend
+pytest tests/ -v
 
-**Logic:**
-- If candidate already knows Python → skip Python basics
-- If Machine Learning is required but Python is missing → add Python first (prerequisite)
-- Roadmap is ordered by: gap score + dependency order + JD mention count
-
----
-
-## 📊 Skill Gap Scoring
-```
-gap_score = (required_level - candidate_level) / required_level × 100
-
-Beginner   → gap > 60%  → Start from fundamentals
-Intermediate → gap 30–60% → Focus on missing mid-level skills
-Advanced   → gap < 30%  → Architecture + best practices only
+# Frontend
+cd frontend
+npm test
 ```
 
-Confidence scoring uses:
-- Keyword frequency in resume
-- Context (project description, experience years)
-- Skill mention count in JD
-
 ---
 
-## 🏆 Hackathon Differentiators
+## 📊 New Features in v3
 
-### 1. Explainable AI ✅
-Not just "you lack Python" — shows:
-> *"Python is mentioned 5× in JD as core requirement. Not found anywhere in resume. Confidence: 95%"*
-
-### 2. Graph-Based Skill Dependencies ✅
-Original adaptive logic — not a flat list. Skills have prerequisites, roadmap respects the dependency order.
-
-### 3. Dual AI Engine ✅
-Groq (llama-3.3-70b) for speed. Anthropic Claude as fallback. Best of both worlds.
-
-### 4. Zero Hallucination Courses ✅
-All course URLs are from a verified database (Coursera, fast.ai, MDN, official docs). AI only generates descriptions.
-
-### 5. Full Product — Not Just a Demo ✅
-Authentication, persistent progress tracking, mentor chatbot, career simulation — production-ready.
-
----
-
-## 🎤 Elevator Pitch (30 seconds)
-
-*"Corporate onboarding gives everyone the same training — whether you're a fresher or a 5-year veteran. Our AI Adaptive Onboarding Engine reads your resume, compares it to the job requirements, finds your exact skill gaps, and builds a personalized learning roadmap — in under 30 seconds. With explainable AI, graph-based skill dependencies, and a built-in career simulator, it's not just a tool — it's your personal career coach."*
-
----
-
-## 📬 Demo Flow (for judges)
-
-1. Open app → Register/Login
-2. Select **"Fresher (CS Graduate)"** preset resume
-3. Select **"Full-Stack Engineer"** JD preset
-4. Click **Analyze**
-5. Show tabs one by one:
-   - ⚠️ Gaps → radar chart + heatmap
-   - 🗺️ Roadmap → week plan + reasoning
-   - 🧠 AI Reasoning → explain WHY each skill flagged
-   - 🚀 Career Sim → salary + milestones
-   - 💬 Mentor → ask "Can I skip Docker?"
-
----
-
-## 🔮 Future Roadmap
-
-- [ ] PDF resume upload (PyMuPDF ready)
-- [ ] LMS integration (Udemy, Coursera APIs)
-- [ ] Team onboarding dashboard
-- [ ] Skill assessment quiz
-- [ ] LinkedIn profile import
-- [ ] Multi-language support
+| Feature | v2 | v3 |
+|---|---|---|
+| Skill extraction | LLM prompt only | spaCy NER + vocab + LLM |
+| Matching | String comparison | Sentence embeddings cosine sim |
+| Gap scoring | Hardcoded thresholds | Feature-engineered (level + freq + embedding) |
+| Learning path order | LLM decides | Topological sort + priority scoring |
+| Resume score | None | 0–100 with 4-dimension breakdown |
+| Database | users.json flat file | MongoDB Atlas (Motor async) |
+| Auth | Basic JWT | bcrypt + JWT + interceptors |
+| AI reliability | Single provider | Groq → Claude fallback + retry |
+| UI | Emoji-heavy tabs | Professional sidebar + cards |
+| State | useState | TanStack Query + Axios |
+| PDF export | None | WeasyPrint via /export endpoint |
+| CI/CD | None | GitHub Actions → Vercel + Render |
+| Docker | None | docker-compose.yml included |
+# Skill-Gap
